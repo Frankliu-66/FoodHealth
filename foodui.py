@@ -7,8 +7,6 @@ Original file is located at
     https://colab.research.google.com/drive/1Jyz_opuKrhsYZKYSo-banuRO07pyVKrj
 """
 
-!pip install streamlit
-
 import streamlit as st
 
 st.set_page_config(page_title="🍽️ Food Risk Detection", layout="centered")
