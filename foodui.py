@@ -26,19 +26,20 @@ elif operation == "Submit Missing Data":
 if st.sidebar.button("Go"):
     if operation == "Fetch Product":
         if not barcode:
-            st.error("Please enter a barcode.")
+        st.error("Please enter a barcode.")
+    else:
+        url = f"https://world.openfoodfacts.org/api/v2/product/{barcode}"  # 注意.org
+        params = {"fields": ",".join(fields)}
+        res = requests.get(url, params=params)
+        if res.ok and res.json().get("status") == 1:
+            st.success("Product found!")
+            data = res.json()["product"]
+            for key in fields:
+                st.subheader(key.replace("_"," ").title())
+                st.json(data.get(key))
         else:
-            url = f"https://world.openfoodfacts.net/api/v2/product/{barcode}"
-            params = {"fields": ",".join(fields)}
-            res = requests.get(url, params=params)
-            if res.ok and res.json().get("status") == 1:
-                st.success("Product found!")
-                data = res.json()["product"]
-                for key in fields:
-                    st.subheader(key.replace("_"," ").title())
-                    st.json(data.get(key))
-            else:
-                st.error("Product not found or error.")
+            st.error("Product not found or error.")
+
 
     elif operation == "Search by Category":
         if not category:
