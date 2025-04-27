@@ -26,7 +26,7 @@ elif operation == "Submit Missing Data":
 if st.sidebar.button("Go"):
     if operation == "Fetch Product":
         if not barcode:
-        st.error("Please enter a barcode.")
+            st.error("Please enter a barcode.")
     else:
         url = f"https://world.openfoodfacts.org/api/v2/product/{barcode}"  # 注意.org
         params = {"fields": ",".join(fields)}
