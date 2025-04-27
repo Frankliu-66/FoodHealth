@@ -17,7 +17,7 @@ operation = st.sidebar.radio("Operation", ["Fetch Product", "Search by Category"
 # Additional inputs
 if operation == "Search by Category":
     category = st.sidebar.text_input("Category (e.g. Orange Juice)", "")
-    grade = st.sidebar.selectbox("Nutrition Grade", ["a","b","c","d","e"])
+    grade = st.sidebar.selectbox("Nutrition Grade", ["a", "b", "c", "d", "e"])
 elif operation == "Submit Missing Data":
     uid = st.sidebar.text_input("User ID", "")
     pwd = st.sidebar.text_input("Password", type="password")
@@ -27,19 +27,18 @@ if st.sidebar.button("Go"):
     if operation == "Fetch Product":
         if not barcode:
             st.error("Please enter a barcode.")
-    else:
-        url = f"https://world.openfoodfacts.org/api/v2/product/{barcode}"  # 注意.org
-        params = {"fields": ",".join(fields)}
-        res = requests.get(url, params=params)
-        if res.ok and res.json().get("status") == 1:
-            st.success("Product found!")
-            data = res.json()["product"]
-            for key in fields:
-                st.subheader(key.replace("_"," ").title())
-                st.json(data.get(key))
         else:
-            st.error("Product not found or error.")
-
+            url = f"https://world.openfoodfacts.org/api/v2/product/{barcode}"  # 注意.org
+            params = {"fields": ",".join(fields)}
+            res = requests.get(url, params=params)
+            if res.ok and res.json().get("status") == 1:
+                st.success("Product found!")
+                data = res.json()["product"]
+                for key in fields:
+                    st.subheader(key.replace("_", " ").title())
+                    st.json(data.get(key))
+            else:
+                st.error("Product not found or error.")
 
     elif operation == "Search by Category":
         if not category:
@@ -52,15 +51,18 @@ if st.sidebar.button("Go"):
                 "fields": "code,product_name,nutrition_grades"
             }
             res = requests.get(url, params=params)
-            obj = res.json()
-            st.write(f"Found {obj['count']} products")
-            st.json(obj["products"])
+            if res.ok:
+                obj = res.json()
+                st.success(f"Found {obj['count']} products")
+                st.json(obj["products"])
+            else:
+                st.error("Search failed.")
 
     elif operation == "Submit Missing Data":
         if not (barcode and uid and pwd):
             st.error("Provide barcode, user ID, and password.")
         else:
-            url = "https://world.openfoodfacts.net/cgi/product_jqm2.pl"
+            url = "https://world.openfoodfacts.org/cgi/product_jqm2.pl"  # 改成.org了
             payload = {
                 "user_id": uid, "password": pwd, "code": barcode,
                 # example: posting sodium
@@ -73,3 +75,4 @@ if st.sidebar.button("Go"):
                 st.json(res.json())
             else:
                 st.error("Submission failed.")
+
