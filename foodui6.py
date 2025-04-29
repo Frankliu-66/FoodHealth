@@ -285,6 +285,7 @@ st.markdown("""
 
 **App Purpose:**
 > Food Compass helps you analyze nutrition facts of food products and aligns them with your dietary needs.
+> Food Compass is connected to Open Food Facts API service, for all terms, please check "https://world.openfoodfacts.org/api/v2/search"
 
 **Main Features:**
 - Barcode and Category Search
