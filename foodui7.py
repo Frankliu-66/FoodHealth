@@ -319,9 +319,18 @@ def draw_map(state_counts):
 # Inside tab2
 with tab2:
     st.header("🗺️ Food Recall Map")
+    selected_year = st.selectbox(
+        "Filter by Recall Year",
+        options=["All", "2024", "2023", "2022", "2021"],
+        index=0  # default is all
+    )
 
     data = get_recall_data()
     df_raw, state_counts = process_data(data)
+    if selected_year != "All":
+        df_raw = df_raw[df_raw['recall_initiation_date'].str.startswith(selected_year)]
+        state_counts = df_raw['state'].value_counts().reset_index()
+        state_counts.columns = ['state', 'count']
 
     fig = draw_map(state_counts)
     st.plotly_chart(fig, use_container_width=True)
