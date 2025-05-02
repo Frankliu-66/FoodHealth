@@ -357,31 +357,45 @@ with tab2:
 
 # Tab 3
 with tab3:
-    st.header("🇺🇸 U.S. Eating Habits Overview")
-
-    nutrient = st.selectbox("Select Nutrient", ["Sodium (mg)", "Fat (g)"], key="tab3_nutrient")
+    st.header("U.S. Eating Habits Overview")
 
     import pandas as pd
     import plotly.express as px
 
+    nutrient = st.selectbox("Select Nutrient", ["Sodium (mg)", "Fat (g)"], key="tab3_nutrient")
+
     try:
         df = pd.read_csv("nhanes_small.csv")
     except FileNotFoundError:
-        st.error("File 'nhanes_small.csv' not found.")
+        st.error("❌ File 'nhanes_small.csv' not found.")
         st.stop()
 
-    #
+    # 
+    df["DR1ISODI"] = pd.to_numeric(df["DR1ISODI"], errors="coerce")
+    df["DR1ITFAT"] = pd.to_numeric(df["DR1ITFAT"], errors="coerce")
+
+    # 
     meal_map = {
         "1": "Breakfast",
         "2": "Lunch",
         "3": "Dinner",
-        "4": "Snack"
+        "4": "Supper",
+        "5": "Brunch",
+        "6": "Snack",
+        "7": "Drink",
+        "8": "Infant Feeding",
+        "9": "Extended Consumption"
     }
     df["Meal Type"] = df["DR1_030Z"].astype(str).map(meal_map)
 
+    # 
     df_filtered = df[["Meal Type", "DR1ISODI", "DR1ITFAT"]].dropna()
+    df_filtered = df_filtered[df_filtered["Meal Type"].notna()]
+    df_filtered = df_filtered[df_filtered["Meal Type"].isin([
+        "Breakfast", "Lunch", "Dinner", "Snack", "Drink", "Supper", "Brunch", "Extended Consumption"
+    ])]
 
-    # aggreate
+    # 
     agg = df_filtered.groupby("Meal Type", as_index=False).agg({
         "DR1ISODI": "mean",
         "DR1ITFAT": "mean"
@@ -390,13 +404,14 @@ with tab3:
         "DR1ITFAT": "Fat (g)"
     })
 
-    #
+    # 
     fig = px.bar(
         agg,
         x="Meal Type",
         y=nutrient,
         color="Meal Type",
-        title=f"Average {nutrient} by Meal Type (NHANES)"
+        title=f"Average {nutrient} by Meal Type (NHANES)",
+        labels={nutrient: nutrient}
     )
     st.plotly_chart(fig, use_container_width=True)
 
