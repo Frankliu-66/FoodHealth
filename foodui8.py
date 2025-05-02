@@ -360,65 +360,60 @@ with tab3:
     st.header("🇺🇸 U.S. Eating Habits Overview")
 
     import pandas as pd
-    import plotly.express as px
+    import matplotlib.pyplot as plt
 
-    # 
-    nutrient = st.selectbox("Select Nutrient", ["Sodium (mg)", "Fat (g)"], key="tab3_nutrient")
-
-    # 
     try:
         df = pd.read_csv("nhanes_small.csv")
     except FileNotFoundError:
         st.error("❌ File 'nhanes_small.csv' not found.")
         st.stop()
 
-    # 
-    df["DR1ISODI"] = pd.to_numeric(df["DR1ISODI"], errors="coerce") * 1000  # 转换单位：g → mg
-    df["DR1ITFAT"] = pd.to_numeric(df["DR1ITFAT"], errors="coerce")
+    df["DR1ISODI"] = pd.to_numeric(df["DR1ISODI"], errors="coerce")  # sodium (mg)
+    df["DR1ITFAT"] = pd.to_numeric(df["DR1ITFAT"], errors="coerce")  # fat (g)
 
-    # ）
     meal_map = {
-        "1": "Breakfast",
-        "2": "Lunch",
-        "3": "Dinner",
-        "4": "Supper",
-        "5": "Brunch",
-        "6": "Snack",
-        "7": "Drink",
-        "8": "Infant Feeding",
-        "9": "Extended Consumption"
+        1: "Breakfast", 2: "Lunch", 3: "Dinner", 4: "Supper", 5: "Brunch",
+        6: "Snack", 7: "Drink", 8: "Infant Feeding", 9: "Extended Consumption"
     }
-    df["Meal Type"] = df["DR1_030Z"].astype(str).map(meal_map)
+    df["Meal Type"] = df["DR1_030Z"].map(meal_map)
+
+    
+    df_filtered = df.dropna(subset=["Meal Type", "DR1ISODI", "DR1ITFAT"])
 
     # 
-    df_filtered = df[["Meal Type", "DR1ISODI", "DR1ITFAT"]].dropna()
-    df_filtered = df_filtered[df_filtered["Meal Type"].notna()]
-    df_filtered = df_filtered[df_filtered["Meal Type"].isin(list(meal_map.values()))]
+    agg = df_filtered.groupby("Meal Type")[["DR1ISODI", "DR1ITFAT"]].mean().reset_index()
+    agg = agg.rename(columns={"DR1ISODI": "Sodium (mg)", "DR1ITFAT": "Fat (g)"})
 
     # 
-    agg = df_filtered.groupby("Meal Type", as_index=False).agg({
-        "DR1ISODI": "mean",
-        "DR1ITFAT": "mean"
-    }).rename(columns={
-        "DR1ISODI": "Sodium (mg)",
-        "DR1ITFAT": "Fat (g)"
-    })
+    nutrient = st.selectbox("Select Nutrient to Display", ["Sodium (mg)", "Fat (g)"], key="meal_plot_nutrient")
 
     # 
-    fig = px.bar(
-        agg,
-        x="Meal Type",
-        y=nutrient,
-        color="Meal Type",
-        title=f"Average {nutrient} by Meal Type (NHANES)",
-        labels={nutrient: nutrient}
-    )
-    st.plotly_chart(fig, use_container_width=True)
+    fig, ax = plt.subplots(figsize=(8, 5))
+    ax.bar(agg["Meal Type"], agg[nutrient], color="#4c72b0")
+    ax.set_title(f"Average {nutrient} by Meal Type (NHANES)", fontsize=14)
+    ax.set_xlabel("Meal Type")
+    ax.set_ylabel(nutrient)
+    ax.grid(axis='y', linestyle='--', alpha=0.5)
+    plt.xticks(rotation=30)
+    plt.tight_layout()
+
+    # 
+    st.pyplot(fig)
 
     with st.expander("About this data"):
         st.markdown("""
         This chart reflects **average nutrient intake per eating occasion** as reported
         in **NHANES 2021-2023** (`DR1IFF_L.csv`).
+
+        1: "Breakfast"
+        2: "Lunch"
+        3: "Dinner"
+        4: "Supper"
+        5: "Brunch"
+        6: "Snack"
+        7: "Drink"
+        8: "Infant Feeding"
+        9: "Extended Consumption"
 
         Meals are grouped by type (breakfast, lunch, dinner, snack), and show
         the **average sodium (mg)** or **fat (g)** consumed per occasion.
