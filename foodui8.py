@@ -357,13 +357,15 @@ with tab2:
 
 # Tab 3
 with tab3:
-    st.header("U.S. Eating Habits Overview")
+    st.header("🇺🇸 U.S. Eating Habits Overview")
 
     import pandas as pd
     import plotly.express as px
 
+    # 
     nutrient = st.selectbox("Select Nutrient", ["Sodium (mg)", "Fat (g)"], key="tab3_nutrient")
 
+    # 
     try:
         df = pd.read_csv("nhanes_small.csv")
     except FileNotFoundError:
@@ -371,10 +373,10 @@ with tab3:
         st.stop()
 
     # 
-    df["DR1ISODI"] = pd.to_numeric(df["DR1ISODI"], errors="coerce")
+    df["DR1ISODI"] = pd.to_numeric(df["DR1ISODI"], errors="coerce") * 1000  # 转换单位：g → mg
     df["DR1ITFAT"] = pd.to_numeric(df["DR1ITFAT"], errors="coerce")
 
-    # 
+    # ）
     meal_map = {
         "1": "Breakfast",
         "2": "Lunch",
@@ -391,9 +393,7 @@ with tab3:
     # 
     df_filtered = df[["Meal Type", "DR1ISODI", "DR1ITFAT"]].dropna()
     df_filtered = df_filtered[df_filtered["Meal Type"].notna()]
-    df_filtered = df_filtered[df_filtered["Meal Type"].isin([
-        "Breakfast", "Lunch", "Dinner", "Snack", "Drink", "Supper", "Brunch", "Extended Consumption"
-    ])]
+    df_filtered = df_filtered[df_filtered["Meal Type"].isin(list(meal_map.values()))]
 
     # 
     agg = df_filtered.groupby("Meal Type", as_index=False).agg({
