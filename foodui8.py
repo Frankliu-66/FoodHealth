@@ -357,7 +357,7 @@ with tab2:
 
 # Tab 3
 with tab3:
-    st.header("🇺🇸 U.S. Eating Habits Overview")
+    st.header("U.S. Eating Habits Overview")
 
     import pandas as pd
     import matplotlib.pyplot as plt
