@@ -280,7 +280,12 @@ def display_product_card(p, dietary_preferences, thresholds):
 
 
 # --- Main Action ---
-tab1, tab2 = st.tabs(["Nutrition Food Checker", "🗺️ Food Recall Map"])
+tab1, tab2, tab3 = st.tabs([
+    "Nutrition Checker",
+    "🗺️ Food Recall Map",
+    "U.S. Eating Habits"
+])
+
 with tab1:
   st.info("Use the sidebar to configure your query before searching.")
   if st.sidebar.button("Go"):
