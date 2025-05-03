@@ -413,6 +413,70 @@ with tab2:
         """)
         st.markdown("---")
 
+# Tab 3
+with tab3:
+    st.header("U.S. Eating Habits Overview")
+
+    import pandas as pd
+    import matplotlib.pyplot as plt
+
+    try:
+        df = pd.read_csv("nhanes_small.csv")
+    except FileNotFoundError:
+        st.error("❌ File 'nhanes_small.csv' not found.")
+        st.stop()
+
+    df["DR1ISODI"] = pd.to_numeric(df["DR1ISODI"], errors="coerce")  # sodium (mg)
+    df["DR1ITFAT"] = pd.to_numeric(df["DR1ITFAT"], errors="coerce")  # fat (g)
+
+    meal_map = {
+        1: "Breakfast", 2: "Lunch", 3: "Dinner", 4: "Supper", 5: "Brunch",
+        6: "Snack", 7: "Drink", 8: "Infant Feeding", 9: "Extended Consumption"
+    }
+    df["Meal Type"] = df["DR1_030Z"].map(meal_map)
+
+    
+    df_filtered = df.dropna(subset=["Meal Type", "DR1ISODI", "DR1ITFAT"])
+
+    # 
+    agg = df_filtered.groupby("Meal Type")[["DR1ISODI", "DR1ITFAT"]].mean().reset_index()
+    agg = agg.rename(columns={"DR1ISODI": "Sodium (mg)", "DR1ITFAT": "Fat (g)"})
+
+    # 
+    nutrient = st.selectbox("Select Nutrient to Display", ["Sodium (mg)", "Fat (g)"], key="meal_plot_nutrient")
+
+    # 
+    fig, ax = plt.subplots(figsize=(8, 5))
+    ax.bar(agg["Meal Type"], agg[nutrient], color="#4c72b0")
+    ax.set_title(f"Average {nutrient} by Meal Type (NHANES)", fontsize=14)
+    ax.set_xlabel("Meal Type")
+    ax.set_ylabel(nutrient)
+    ax.grid(axis='y', linestyle='--', alpha=0.5)
+    plt.xticks(rotation=30)
+    plt.tight_layout()
+
+    # 
+    st.pyplot(fig)
+
+    with st.expander("About this data"):
+        st.markdown("""
+        This chart reflects **average nutrient intake per eating occasion** as reported
+        in **NHANES 2021-2023** (`DR1IFF_L.csv`).
+
+        1: "Breakfast"
+        2: "Lunch"
+        3: "Dinner"
+        4: "Supper"
+        5: "Brunch"
+        6: "Snack"
+        7: "Drink"
+        8: "Infant Feeding"
+        9: "Extended Consumption"
+
+        Meals are grouped by type (breakfast, lunch, dinner, snack), and show
+        the **average sodium (mg)** or **fat (g)** consumed per occasion.
+        """)
+
 st.divider()
 st.markdown("""
 ### About Food Compass
